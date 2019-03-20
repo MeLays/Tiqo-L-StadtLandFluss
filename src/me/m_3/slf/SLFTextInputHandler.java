@@ -34,7 +34,7 @@ public class SLFTextInputHandler implements HTMLTextInputHandler{
 			if(htmlObject.startsWith("slf.game_writing.entry.")) {
 				Game game = main.gameManager.findUser(user);
 				if (game == null) return;
-				text = text.replaceAll("[^a-zA-Z0-9 ]", "");
+				text = text.replaceAll("[^a-zA-Z0-9 äüöÄÜÖ!.,-]", "");
 				String category = htmlObject.replace("slf.game_writing.entry.", "");
 				if (!game.categories.contains(category)) return;
 				if (text.length() > 64) return;
@@ -44,6 +44,7 @@ public class SLFTextInputHandler implements HTMLTextInputHandler{
 						textInput = (HTMLTextInput) user.getHtmlBox().getObject(htmlObject);
 						textInput.setHtmlAttribute("value", "");
 						user.getHtmlBox().updateObject(htmlObject, textInput, true);
+						return;
 					} catch (UnknownObjectIDException e) {
 
 					}				}
