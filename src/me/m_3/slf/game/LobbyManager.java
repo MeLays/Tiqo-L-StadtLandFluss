@@ -1,7 +1,9 @@
 package me.m_3.slf.game;
 
 import java.util.HashMap;
+import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import me.m_3.slf.Main;
 import me.m_3.tiqoL.user.User;
@@ -13,6 +15,7 @@ public class LobbyManager {
 	Main  main;
 	
 	HashMap<UUID , Lobby> lobbies = new HashMap<UUID , Lobby>();
+	public HashMap<String , UUID> fastJoin = new HashMap<String , UUID>();
 	
 	public LobbyManager(Main main) {
 		this.main = main;
@@ -20,9 +23,22 @@ public class LobbyManager {
 	
 	public Lobby createLobby (User user) {
 		UUID uuid = UUID.randomUUID();
-		Lobby lobby = new Lobby(main , uuid);
+		
+		//Generate fast join code
+		int length = 6;
+		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		             + "abcdefghijklmnopqrstuvwxyz"
+		             + "0123456789";
+		String str = new Random().ints(length, 0, chars.length())
+		                         .mapToObj(i -> "" + chars.charAt(i))
+		                         .collect(Collectors.joining());
+		
+		fastJoin.put(str, uuid);
+		
+		Lobby lobby = new Lobby(main , uuid , str);
 		lobby.setOwner(user);
 		lobbies.put(uuid ,lobby);
+		
 		return lobby;
 	}
 	

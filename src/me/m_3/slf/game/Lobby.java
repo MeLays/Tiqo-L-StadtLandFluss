@@ -23,6 +23,7 @@ public class Lobby {
 	User owner;
 	ArrayList<User> users = new ArrayList<User>();
 	UUID uuid;
+	String fastjoin;
 	
 	String[] categories = {"Stadt" , "Land" , "Fluss" , "Name" , "Tier" , "Beruf"
 			, "Obst/Gemüse" , "Getränk" , "Pizzazutat" , "Pflanze" , "Film/Serie" , "YouTuber" , "Pornotitel" , "Buch" , "Etwas Peinliches" , "Superkraft",
@@ -30,11 +31,21 @@ public class Lobby {
 			"Berg/Gebirge" , "Hauptstadt" , "Insel" , "Computerspiel" , "Computerspiel Charakter" , "Jugendwort",
 			"Chemisches Element" , "Englisches Wort" , "Verb" , "Schulfach"};
 	
-	Set<String> enabledCategories = new HashSet<String>();
+	String[] chars = {"A" , "B" , "C" , "D" , "E" , "F" , "G" , "H" , "I" , "J" , "K" , "L" , "M" , "N" , "O" , "P" , "Q" , "R" , "S" , "T" , "U" , "V" , "W" , "X" , "Y" , "Z" , "Ä" , "Ü" , "Ö"};
+
 	
-	public Lobby(Main main , UUID uuid) {
+	Set<String> enabledCategories = new HashSet<String>();
+	Set<String> enabledChars = new HashSet<String>();
+	
+	public Lobby(Main main , UUID uuid , String fastjoin) {
 		this.main = main;
 		this.uuid = uuid;
+		this.fastjoin = fastjoin;
+		
+		for (String s : chars) {
+			if ("ÄÖÜ".contains(s)) continue;
+			enabledChars.add(s);
+		}
 		
 		//Choose Random Categories
 		ArrayList<String> random = new ArrayList<String>(Arrays.asList(categories));
@@ -95,29 +106,56 @@ public class Lobby {
 		HTMLBox box = new HTMLBox(main.getServer() , user);
 		
 		HTMLBody body = new HTMLBody();
+		
 		body.setJavaScriptCSS("font-family", "'M PLUS Rounded 1c', sans-serif");
-		body.addChild(new HTMLSpan("<h4>Willkommen in der Lobby " + uuid+"</h4>"));
+		body.setJavaScriptCSS("backgroundImage", "url(\""+main.getServer().getContentServer().getURL("bg")+"\")");
+		body.setJavaScriptCSS("backgroundRepeat", "repeat");
+		body.setJavaScriptCSS("paddingLeft", "10%");
+		body.setJavaScriptCSS("paddingRight", "10%");
+		body.addChild(new HTMLObject("center").addChild(new HTMLObject("img").setHtmlAttribute("src", main.getServer().getContentServer().getURL("logo"))
+				.setJavaScriptCSS("maxHeight", "10%")
+				.setJavaScriptCSS("maxWidth", "80%")));
 		
-		body.addChild(new HTMLObject("hr"));
+		HTMLDiv cardDiv = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card");
+		//Card Content
+		HTMLDiv cardContent = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card-content").addChild(
+				new HTMLSpan("Willkommen in der Lobby \"<b><font face=\"consolas\">" + fastjoin +"</font></b>\"").setHtmlAttribute("class", "card-title"));
 		
+		//Card Action
+		HTMLDiv cardActionDiv = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card-action");
 		HTMLDiv categoriesDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.categoriesDiv");
-		body.addChild(categoriesDiv);
+		cardActionDiv.addChild(categoriesDiv);
 		
-		body.addChild(new HTMLObject("hr"));
-		body.addChild(new HTMLObject("h4").setInnerText("Spieler:"));
+		//Card Action
+		HTMLDiv cardActionDiv3 = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card-action");
+		HTMLDiv charsDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.charsDiv");
+		cardActionDiv3.addChild(charsDiv);
+		
+		//Card Content
+		HTMLDiv cardContent2 = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card-content");
+		cardContent2.addChild(new HTMLObject("span").setInnerText("Spieler:").setHtmlAttribute("class", "card-title"));
 		
 		HTMLDiv userListDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.userListDiv");
-		body.addChild(userListDiv);
-		body.addChild(new HTMLObject("hr"));
+		cardContent2.addChild(userListDiv);
 		
+		//Card Action
+		HTMLDiv cardAction2Div = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card-action");
 		if (user == owner) {
-			body.addChild(new HTMLObject("a").setObjectID("slf.lobby.shutdownLobby").setInnerText("Close Lobby").setHtmlAttribute("href", "#").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+			cardAction2Div.addChild(new HTMLObject("a").setObjectID("slf.lobby.shutdownLobby").setInnerText("Close Lobby").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
 					.setHtmlAttribute("class", "waves-effect waves-teal btn-flat"));
-			body.addChild(new HTMLObject("a").setObjectID("slf.lobby.startLobby").setInnerText("Start").setHtmlAttribute("href", "#").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
-					.setHtmlAttribute("class", "btn waves-effect waves-light green accent-3"));
+			cardAction2Div.addChild(new HTMLObject("a").setObjectID("slf.lobby.startLobby").setInnerText("Start").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+					.setHtmlAttribute("class", "waves-effect waves-teal btn-flat green-text"));
 		}
-		body.addChild(new HTMLObject("a").setObjectID("slf.lobby.leaveLobby").setInnerText("Verlassen").setHtmlAttribute("href", "#").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
-				.setHtmlAttribute("class", "waves-effect waves-teal btn-flat"));
+		cardAction2Div.addChild(new HTMLObject("a").setObjectID("slf.lobby.leaveLobby").setInnerText("Verlassen").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+				.setHtmlAttribute("class", "waves-effect waves-teal btn-flat red-text"));
+
+		
+		cardDiv.addChild(cardContent);
+		cardDiv.addChild(cardActionDiv);
+		cardDiv.addChild(cardActionDiv3);
+		cardDiv.addChild(cardContent2);
+		cardDiv.addChild(cardAction2Div);
+		body.addChild(cardDiv);
 		
 		box.setHTMLBody(body);
 		user.setHTMLBox(box);
@@ -128,7 +166,7 @@ public class Lobby {
 		if (users.size() < 2) return;
 		ArrayList<String> cats = new ArrayList<String>();
 		cats.addAll(this.enabledCategories);
-		main.gameManager.createGame(owner, users, cats, 5);
+		main.gameManager.createGame(owner, users, cats, this.enabledChars , 5);
 		for (User user : (ArrayList<User>) this.users.clone()) {
 			users.remove(user);
 		}
@@ -148,11 +186,11 @@ public class Lobby {
 					userEntry.setInnerText("<b>" + main.userManager.getUsername(subuser) + "</b>&nbsp;&nbsp;");
 				}
 				if (this.isOwner(user) && user != subuser) {
-					userEntry.addChild(new HTMLObject("a").setObjectID("slf.lobby.removeUser."+main.userManager.getUsername(subuser)).setInnerText("Remove").setHtmlAttribute("href", "#").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+					userEntry.addChild(new HTMLObject("a").setObjectID("slf.lobby.removeUser."+main.userManager.getUsername(subuser)).setInnerText("Remove").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
 							.setHtmlAttribute("class", "btn waves-effect waves-light red lighten-2"));
 				}
 				else if (this.isOwner(user) && user == subuser) {
-					userEntry.addChild(new HTMLObject("a").setObjectID("slf.lobby.removeUser."+main.userManager.getUsername(subuser)).setInnerText("Remove").setHtmlAttribute("href", "#").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+					userEntry.addChild(new HTMLObject("a").setObjectID("slf.lobby.removeUser."+main.userManager.getUsername(subuser)).setInnerText("Remove").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
 							.setHtmlAttribute("class", "btn disabled"));
 				}
 				collection.addChild(userEntry);
@@ -178,6 +216,18 @@ public class Lobby {
 		this.updateCategories();
 	}
 	
+	public void toggleChar(String cat) {
+		if (Arrays.asList(this.chars).contains(cat)) {
+			if (this.enabledChars.contains(cat) && this.enabledChars.size() > 1) {
+				this.enabledChars.remove(cat);
+			}
+			else {
+				this.enabledChars.add(cat);
+			}
+		}
+		this.updateCategories();
+	}
+	
 	public void updateCategories() {
 		for (User user : this.users) {
 			updateCategories(user);
@@ -188,15 +238,31 @@ public class Lobby {
 		HTMLDiv categoryListDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.categoriesDiv");
 		for (String s : this.categories) {
 			if (this.enabledCategories.contains(s))
-				categoryListDiv.addChild(new HTMLObject("a").setObjectID("slf.lobby.toggleCategory."+s).setInnerText(s).setHtmlAttribute("href", "#").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
-					.setHtmlAttribute("class", "btn waves-effect waves-light"));
+				categoryListDiv.addChild(new HTMLObject("a").setObjectID("slf.lobby.toggleCategory."+s).setInnerText(s).setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+					.setHtmlAttribute("class", "btn waves-effect waves-light amber lighten-5 black-text"));
 			else {
-				categoryListDiv.addChild(new HTMLObject("a").setObjectID("slf.lobby.toggleCategory."+s).setInnerText(s).setHtmlAttribute("href", "#").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
-						.setHtmlAttribute("class", "waves-effect waves-teal btn-flat"));
+				categoryListDiv.addChild(new HTMLObject("a").setObjectID("slf.lobby.toggleCategory."+s).setInnerText(s).setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+						.setHtmlAttribute("class", "waves-effect waves-teal btn-flat black-text"));
 			}
 		}
 		try {
 			user.getHtmlBox().updateObject("slf.lobby.categoriesDiv", categoryListDiv, false);
+		} catch (UnknownObjectIDException e) {
+			e.printStackTrace();
+		}
+		
+		HTMLDiv charListDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.charsDiv");
+		for (String s : this.chars) {
+			if (this.enabledChars.contains(s))
+				charListDiv.addChild(new HTMLObject("a").setObjectID("slf.lobby.toggleChar."+s).setInnerText(s).setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+					.setHtmlAttribute("class", "btn waves-effect waves-light amber lighten-5 black-text"));
+			else {
+				charListDiv.addChild(new HTMLObject("a").setObjectID("slf.lobby.toggleChar."+s).setInnerText(s).setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+						.setHtmlAttribute("class", "waves-effect waves-teal btn-flat black-text"));
+			}
+		}
+		try {
+			user.getHtmlBox().updateObject("slf.lobby.charsDiv", charListDiv, false);
 		} catch (UnknownObjectIDException e) {
 			e.printStackTrace();
 		}
