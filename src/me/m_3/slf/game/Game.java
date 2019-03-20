@@ -30,7 +30,7 @@ public class Game {
 	public ArrayList<User> users;
 	public ArrayList<String> categories;
 	int rounds;
-	int counter = 5;
+	int counter = 3;
 	int game_timer_full = 60;
 	int game_timer = 0;
 	int remainingRounds;
@@ -64,12 +64,31 @@ public class Game {
 	
 	public void leaveUser(User user) {
 		this.users.remove(user);
+		if(main.userManager.getCurrentPage(user).equals("game_results")) {
+			this.refreshResultOverview();
+			Game game = this;
+			
+			boolean done = true;
+			
+			for (User u : game.users) {
+				if (!game.userready.containsKey(u)) {
+					done = false;
+					continue;
+				}
+				if (!game.userready.get(u) && u.getUserStatus() == UserStatus.OPEN) {
+					done = false;
+				}
+			}
+			if (done) {
+				game.nextGame();
+			}
+		}
 		if (user.getUserStatus() != UserStatus.CLOSED)
 			main.eventHandler.buildStartPage(user);
 	}
 	
 	public void showCountdown() {
-		this.counter = 5;
+		this.counter = 3;
 		userready = new HashMap<User , Boolean>();
 		for (User user : users) {
 			HTMLBox box = new HTMLBox(this.main.getServer() , user);
@@ -85,7 +104,7 @@ public class Game {
 					.setJavaScriptCSS("maxWidth", "80%")));
 			
 			body.addChild(new HTMLObject("br"));
-			body.addChild(new HTMLObject("center").addChild(new HTMLObject("h1").setInnerText("5").setObjectID("slf.game_countdown.shutdownLobby")));
+			body.addChild(new HTMLObject("center").addChild(new HTMLObject("h1").setInnerText("3").setObjectID("slf.game_countdown.shutdownLobby")));
 			
 			box.setHTMLBody(body);
 			user.setHTMLBox(box);
@@ -409,7 +428,7 @@ public class Game {
 					String answer = answered.get(key);
 					int i = 0;
 					for (String s : answered.values()) {
-						if (s == answer) i ++;
+						if (s.equalsIgnoreCase(answer)) i ++;
 					}
 					if (i == 1) {
 						this.scores.put(key , this.scores.get(key) + 10);
@@ -451,10 +470,23 @@ public class Game {
 			HTMLObject collection = new HTMLObject("ul").setHtmlAttribute("class", "collection");
 			divResults.addChild(collection);
 			
+			int rank = 1;
+			
 			for (User subuser : users) {
+				User highest = subuser;
+				for (User x : this.scores.keySet()) {
+					if (this.scores.get(x) > this.scores.get(highest)) {
+						highest = x;
+					}
+				}
+				
 				HTMLObject userEntry = new HTMLObject("li").setHtmlAttribute("class", "collection-item");
-				userEntry.setInnerText(main.userManager.getUsername(subuser) + "&nbsp;" + this.scores.get(subuser));
+				userEntry.setInnerText(rank + " - " + main.userManager.getUsername(highest));
+				userEntry.addChild(new HTMLSpan("span").setHtmlAttribute("class", "new badge red").setHtmlAttribute("data-badge-caption", "").setInnerText("" + this.scores.get(highest)));
 				collection.addChild(userEntry);
+				
+				this.scores.remove(highest);
+				rank ++;
 			}
 			
 			cardContent.addChild(divResults);

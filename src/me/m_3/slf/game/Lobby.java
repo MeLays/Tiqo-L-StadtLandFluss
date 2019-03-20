@@ -166,7 +166,7 @@ public class Lobby {
 		if (users.size() < 2) return;
 		ArrayList<String> cats = new ArrayList<String>();
 		cats.addAll(this.enabledCategories);
-		main.gameManager.createGame(owner, users, cats, this.enabledChars , 5);
+		main.gameManager.createGame(owner, users, cats, this.enabledChars , 2);
 		for (User user : (ArrayList<User>) this.users.clone()) {
 			users.remove(user);
 		}
