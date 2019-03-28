@@ -65,8 +65,8 @@ public class Lobby {
 	
 	public void joinUser(User user) {
 		users.add(user);
-		setupUser(user);
 		main.userManager.setCurrentPage(user, "lobby");
+		setupUser(user);
 		updateUserList();
 		updateCategories(user);
 	}
@@ -112,6 +112,7 @@ public class Lobby {
 		body.setJavaScriptCSS("backgroundRepeat", "repeat");
 		body.setJavaScriptCSS("paddingLeft", "10%");
 		body.setJavaScriptCSS("paddingRight", "10%");
+		main.addTopbar(user, body);
 		body.addChild(new HTMLObject("center").addChild(new HTMLObject("img").setHtmlAttribute("src", main.getServer().getContentServer().getURL("logo"))
 				.setJavaScriptCSS("maxHeight", "10%")
 				.setJavaScriptCSS("maxWidth", "80%")));
@@ -166,7 +167,7 @@ public class Lobby {
 		if (users.size() < 2) return;
 		ArrayList<String> cats = new ArrayList<String>();
 		cats.addAll(this.enabledCategories);
-		main.gameManager.createGame(owner, users, cats, this.enabledChars , 2);
+		main.gameManager.createGame(owner, users, cats, this.enabledChars , 5);
 		for (User user : (ArrayList<User>) this.users.clone()) {
 			users.remove(user);
 		}

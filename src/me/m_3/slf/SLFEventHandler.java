@@ -75,6 +75,7 @@ public class SLFEventHandler implements EventHandler{
 	//Update Methods
 	
 	public void buildStartPage(User user) {
+		main.userManager.setCurrentPage(user, "start");
 		HTMLBox box = new HTMLBox(main.getServer() , user);
 		
 		HTMLBody body = new HTMLBody();
@@ -83,9 +84,13 @@ public class SLFEventHandler implements EventHandler{
 		body.setJavaScriptCSS("backgroundRepeat", "repeat");
 		body.setJavaScriptCSS("paddingLeft", "10%");
 		body.setJavaScriptCSS("paddingRight", "10%");
+		
+		main.addTopbar(user, body);
+		
 		body.addChild(new HTMLObject("center").addChild(new HTMLObject("img").setHtmlAttribute("src", main.getServer().getContentServer().getURL("logo"))
 				.setJavaScriptCSS("maxHeight", "10%")
-				.setJavaScriptCSS("maxWidth", "80%")));
+				.setJavaScriptCSS("maxWidth", "80%")
+				.setJavaScriptCSS("top", "50px")));
 		
 		HTMLDiv cardDiv = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card");
 		HTMLDiv cardContent = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card-content").addChild(
@@ -134,7 +139,6 @@ public class SLFEventHandler implements EventHandler{
 		body.addChild(cardDiv);
 		box.setHTMLBody(body);
 		user.setHTMLBox(box);
-		main.userManager.setCurrentPage(user, "start");
 		
 		this.updateStartPage();
 	}

@@ -91,6 +91,7 @@ public class Game {
 		this.counter = 3;
 		userready = new HashMap<User , Boolean>();
 		for (User user : users) {
+			main.userManager.setCurrentPage(user, "game_countdown");
 			HTMLBox box = new HTMLBox(this.main.getServer() , user);
 			HTMLBody body = new HTMLBody();
 			
@@ -99,6 +100,7 @@ public class Game {
 			body.setJavaScriptCSS("backgroundRepeat", "repeat");
 			body.setJavaScriptCSS("paddingLeft", "10%");
 			body.setJavaScriptCSS("paddingRight", "10%");
+			main.addTopbar(user, body);
 			body.addChild(new HTMLObject("center").addChild(new HTMLObject("img").setHtmlAttribute("src", main.getServer().getContentServer().getURL("logo"))
 					.setJavaScriptCSS("maxHeight", "10%")
 					.setJavaScriptCSS("maxWidth", "80%")));
@@ -108,7 +110,6 @@ public class Game {
 			
 			box.setHTMLBody(body);
 			user.setHTMLBox(box);
-			main.userManager.setCurrentPage(user, "game_countdown");
 		}
 		
 		System.out.println(users);
@@ -161,6 +162,7 @@ public class Game {
 		currChar = new ArrayList<String>(this.chars).get(randomIndex);
 		
 		for (User user : users) {
+			main.userManager.setCurrentPage(user, "game_writing");
 			HTMLBox box = new HTMLBox(this.main.getServer() , user);
 			HTMLBody body = new HTMLBody();
 			
@@ -169,6 +171,7 @@ public class Game {
 			body.setJavaScriptCSS("backgroundRepeat", "repeat");
 			body.setJavaScriptCSS("paddingLeft", "10%");
 			body.setJavaScriptCSS("paddingRight", "10%");
+			main.addTopbar(user, body);
 			body.addChild(new HTMLObject("center").addChild(new HTMLObject("img").setHtmlAttribute("src", main.getServer().getContentServer().getURL("logo"))
 					.setJavaScriptCSS("maxHeight", "10%")
 					.setJavaScriptCSS("maxWidth", "80%")));
@@ -204,7 +207,6 @@ public class Game {
 			body.addChild(cardDiv);
 			box.setHTMLBody(body);
 			user.setHTMLBox(box);
-			main.userManager.setCurrentPage(user, "game_writing");
 		}
 		
 		//Start Thread Timer
@@ -279,6 +281,7 @@ public class Game {
 			body.setJavaScriptCSS("backgroundRepeat", "repeat");
 			body.setJavaScriptCSS("paddingLeft", "10%");
 			body.setJavaScriptCSS("paddingRight", "10%");
+			main.addTopbar(user, body);
 			body.addChild(new HTMLObject("center").addChild(new HTMLObject("img").setHtmlAttribute("src", main.getServer().getContentServer().getURL("logo"))
 					.setJavaScriptCSS("maxHeight", "10%")
 					.setJavaScriptCSS("maxWidth", "80%")));
@@ -360,7 +363,8 @@ public class Game {
 						HTMLObject td = new HTMLObject("td").setHtmlAttribute("style", "width: 35%");
 						HTMLObject label = new HTMLObject("label");
 						
-						label.addChild(((HTMLCheckbox) new HTMLCheckbox(this.voting.get(from).get(s).get(user)).setObjectID("slf.game_results.check."+s+"."+main.userManager.getUsername(from))).setCheckboxHandler(main.getServer().getEventManager() , main.checkboxHandler));
+						label.addChild(((HTMLCheckbox) new HTMLCheckbox(this.voting.get(from).get(s).get(user)).setObjectID("slf.game_results.check."+s+"."+main.userManager.getUsername(from))).setCheckboxHandler(main.getServer().getEventManager() , main.checkboxHandler)
+								.setHtmlAttribute("class", "filled-in"));
 						if (getVotes(from , s) > users.size() / 2)
 							label.addChild(new HTMLSpan("<b>" + this.answers.get(from).get(s) + "</b>").setHtmlAttribute("style", "color:black;"));
 						else {
@@ -370,14 +374,14 @@ public class Game {
 						td.addChild(label);
 						tablerow.addChild(td);
 					}
-					HTMLObject td = new HTMLObject("td").setHtmlAttribute("style", "width: 35%");
+					HTMLObject td = new HTMLObject("td").setHtmlAttribute("style", "width: 35%").setHtmlAttribute("align", "right");
 
 					for (User voted : users) {
 						if (this.voting.get(from).get(s).get(voted)) {
-							td.addChild(new HTMLObject("i").setHtmlAttribute("class", "material-icons green").setInnerText("check"));
+							td.addChild(new HTMLObject("i").setHtmlAttribute("class", "material-icons Medium green-text").setInnerText("check"));
 						}
 						else {
-							td.addChild(new HTMLObject("i").setHtmlAttribute("class", "material-icons red").setInnerText("clear"));
+							td.addChild(new HTMLObject("i").setHtmlAttribute("class", "material-icons Medium red-text").setInnerText("clear"));
 						}
 					}
 					tablerow.addChild(td);
@@ -450,6 +454,10 @@ public class Game {
 	
 	public void showEndScreen() {
 		for (User user : users) {
+			
+			@SuppressWarnings("unchecked")
+			HashMap<User,Integer> scores = (HashMap<User, Integer>) this.scores.clone();
+			
 			HTMLBox box = new HTMLBox(this.main.getServer() , user);
 			HTMLBody body = new HTMLBody();
 			body.setJavaScriptCSS("font-family", "'M PLUS Rounded 1c', sans-serif");
@@ -457,6 +465,7 @@ public class Game {
 			body.setJavaScriptCSS("backgroundRepeat", "repeat");
 			body.setJavaScriptCSS("paddingLeft", "10%");
 			body.setJavaScriptCSS("paddingRight", "10%");
+			main.addTopbar(user, body);
 			body.addChild(new HTMLObject("center").addChild(new HTMLObject("img").setHtmlAttribute("src", main.getServer().getContentServer().getURL("logo"))
 					.setJavaScriptCSS("maxHeight", "10%")
 					.setJavaScriptCSS("maxWidth", "80%")));
@@ -474,8 +483,9 @@ public class Game {
 			
 			for (User subuser : users) {
 				User highest = subuser;
-				for (User x : this.scores.keySet()) {
-					if (this.scores.get(x) > this.scores.get(highest)) {
+				for (User x : users) {
+					if (scores.get(x) == null || scores.get(highest) == null) continue;
+					if (scores.get(x) > scores.get(highest)) {
 						highest = x;
 					}
 				}
@@ -485,7 +495,7 @@ public class Game {
 				userEntry.addChild(new HTMLSpan("span").setHtmlAttribute("class", "new badge red").setHtmlAttribute("data-badge-caption", "").setInnerText("" + this.scores.get(highest)));
 				collection.addChild(userEntry);
 				
-				this.scores.remove(highest);
+				scores.remove(highest);
 				rank ++;
 			}
 			
