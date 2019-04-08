@@ -18,6 +18,18 @@ public class SLFClickHandler implements HTMLClickHandler{
 	}
 	
 	public void onClick(User user , String htmlObject , double x , double y , double pageX , double pageY) {
+		if (htmlObject.equals("slf.topbar.start.leaveButton")) {
+			Lobby currentLobby = main.lobbyManager.findUser(user);
+			if (currentLobby != null) {
+				currentLobby.leaveUser(user);
+				return;
+			}
+			
+			Game game = main.gameManager.findUser(user);
+			if (game != null) {
+				game.leaveUser(user);
+			}
+		}
 		if (main.userManager.getCurrentPage(user).equals("start")) {
 			if(htmlObject.equals("slf.start.createGame")) {
 				main.lobbyManager.createLobby(user);
@@ -72,11 +84,53 @@ public class SLFClickHandler implements HTMLClickHandler{
 				if (!currentLobby.isOwner(user)) return;
 				currentLobby.startGame();
 			}
+			else if (htmlObject.equals("slf.lobby.settingsRoundsMinus")) {
+				Lobby currentLobby = main.lobbyManager.findUser(user);
+				if (currentLobby == null) return;
+				if (!currentLobby.isOwner(user)) return;
+				
+				if (currentLobby.rounds > 1)
+					currentLobby.rounds --;
+				
+				currentLobby.updateSettings();
+			}
+			else if (htmlObject.equals("slf.lobby.settingsRoundsPlus")) {
+				Lobby currentLobby = main.lobbyManager.findUser(user);
+				if (currentLobby == null) return;
+				if (!currentLobby.isOwner(user)) return;
+				
+				if (currentLobby.rounds < 10)
+					currentLobby.rounds ++;
+				
+				currentLobby.updateSettings();
+			}
+			else if (htmlObject.equals("slf.lobby.settingsTimeMinus")) {
+				Lobby currentLobby = main.lobbyManager.findUser(user);
+				if (currentLobby == null) return;
+				if (!currentLobby.isOwner(user)) return;
+				
+				if (currentLobby.seconds > 10)
+					currentLobby.seconds -= 10;
+				
+				currentLobby.updateSettings();
+			}
+			else if (htmlObject.equals("slf.lobby.settingsTimePlus")) {
+				Lobby currentLobby = main.lobbyManager.findUser(user);
+				if (currentLobby == null) return;
+				if (!currentLobby.isOwner(user)) return;
+				
+				if (currentLobby.seconds < 240)
+					currentLobby.seconds += 10;
+				
+				currentLobby.updateSettings();
+			}
+			
 		}
 		if (main.userManager.getCurrentPage(user).equals("game_writing")) {
 			if(htmlObject.equals("slf.game_writing.stop")) {
 				Game game = main.gameManager.findUser(user);
 				if (game == null) return;
+				if (!game.stop) return;
 				game.showResults();
 			}
 

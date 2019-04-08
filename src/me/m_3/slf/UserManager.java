@@ -12,6 +12,8 @@ public class UserManager {
 	HashMap<User,String> usernames = new HashMap<User,String>();
 	HashMap<User,String> currentPage = new HashMap<User,String>();
 	
+	HashMap<String , String> sessionUsername = new HashMap<String , String>();
+	
 	String[] preNames = {"Rot", "Blau" , "Grün" , "Wald" , "Nacht" , "Klein" , "Groß" , "Meer" , "Wasser"};
 	String[] names = {"Katze" , "Kater" , "Tiger" , "Hund" , "Aal" , "Seegurke" , "Echse" , "Fisch" , "Kabeljau" , "Vogel" , "Delfin" , "Hamster" , "Taube" , "Pferd" , "Kuh" , "Schwein"};
 	
@@ -22,7 +24,12 @@ public class UserManager {
 	public void registerUser(User user) {
 		Random generator = new Random();
 		String username = preNames[generator.nextInt(preNames.length)] + names[generator.nextInt(names.length)];
-		usernames.put(user, fitUsername(username));
+		if (sessionUsername.containsKey(user.getSessionKey())) {
+			username = sessionUsername.get(user.getSessionKey());
+		}
+		username = fitUsername(username);
+		usernames.put(user, username);
+		sessionUsername.put(user.getSessionKey() , username);
 	}
 	
 	public void unregisterUser(User user) {

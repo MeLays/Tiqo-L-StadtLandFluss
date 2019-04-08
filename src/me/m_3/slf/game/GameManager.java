@@ -18,9 +18,9 @@ public class GameManager {
 		this.main = main;
 	}
 	
-	public UUID createGame(User owner , ArrayList<User> users, ArrayList<String> categories , Set<String> chars , int rounds) {
+	public UUID createGame(User owner , ArrayList<User> users, ArrayList<String> categories , Set<String> chars , int rounds , int seconds , boolean voting , boolean stop) {
 		UUID uuid = UUID.randomUUID();
-		Game game = new Game(main , uuid , owner , users , categories , rounds , chars);
+		Game game = new Game(main , uuid , owner , users , categories , rounds , chars , seconds , voting , stop);
 		games.put(uuid , game);
 		return uuid;
 	}

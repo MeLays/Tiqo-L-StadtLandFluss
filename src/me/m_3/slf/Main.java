@@ -75,7 +75,7 @@ public class Main extends Core{
 				return;
 			}
 			addButton(topbar, this.userManager.getUsername(user) , true , "slf.topbar.start.gameButton");
-			addButton(topbar, game.scores.get(user) + " Punkte" , true , "slf.topbar.start.gameButton");
+			addButton(topbar, game.scores.get(user) + " Punkte" , true , "slf.topbar.start.pointsButton");
 			addButton(topbar, "Verlassen" , false , "slf.topbar.start.leaveButton");
 		}
 		
@@ -85,6 +85,7 @@ public class Main extends Core{
 	public void addButton(HTMLDiv topbar , String text , boolean active, String id) {
 		HTMLObject buttonDiv = new HTMLDiv().setHtmlAttribute("style", "position: relative; top: 13px; float:left;");
 		HTMLObject button = new HTMLObject("a").setInnerText(text);
+		button.setObjectID(id);
 		if (active)
 			button.setHtmlAttribute("style", "" +
 					"  background-color: #ffc107;" + 
@@ -102,6 +103,7 @@ public class Main extends Core{
 					"  height: 50px;" +
 					"  font-size: 17px;");
 			button.setHtmlAttribute("href", "javascript:void(0)");
+			button.setClickHandler(this.getServer().getEventManager(), this.clickHandler);
 		}
 		buttonDiv.addChild(button);
 		topbar.addChild(buttonDiv);

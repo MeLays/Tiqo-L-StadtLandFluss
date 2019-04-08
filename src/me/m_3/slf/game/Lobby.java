@@ -8,12 +8,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import me.m_3.slf.Main;
+import me.m_3.slf.UTILS;
 import me.m_3.tiqoL.htmlbuilder.HTMLBody;
 import me.m_3.tiqoL.htmlbuilder.HTMLDiv;
 import me.m_3.tiqoL.htmlbuilder.HTMLObject;
 import me.m_3.tiqoL.htmlbuilder.HTMLSpan;
 import me.m_3.tiqoL.htmlbuilder.box.HTMLBox;
 import me.m_3.tiqoL.htmlbuilder.exceptions.UnknownObjectIDException;
+import me.m_3.tiqoL.htmlbuilder.input.HTMLCheckbox;
 import me.m_3.tiqoL.user.User;
 import me.m_3.tiqoL.user.UserStatus;
 
@@ -24,6 +26,12 @@ public class Lobby {
 	ArrayList<User> users = new ArrayList<User>();
 	UUID uuid;
 	String fastjoin;
+	
+	//Settings
+	public int rounds = 5;
+	public int seconds = 60;
+	public boolean voting = true;
+	public boolean stop = true;
 	
 	String[] categories = {"Stadt" , "Land" , "Fluss" , "Name" , "Tier" , "Beruf"
 			, "Obst/Gemüse" , "Getränk" , "Pizzazutat" , "Pflanze" , "Film/Serie" , "YouTuber" , "Pornotitel" , "Buch" , "Etwas Peinliches" , "Superkraft",
@@ -69,6 +77,7 @@ public class Lobby {
 		setupUser(user);
 		updateUserList();
 		updateCategories(user);
+		updateSettings(user);
 	}
 	
 	public void leaveUser(User user) {
@@ -132,6 +141,11 @@ public class Lobby {
 		HTMLDiv charsDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.charsDiv");
 		cardActionDiv3.addChild(charsDiv);
 		
+		//Card Action
+		HTMLDiv cardActionDiv4 = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card-action");
+		HTMLDiv settingsDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.settingsDiv");
+		cardActionDiv4.addChild(settingsDiv);
+		
 		//Card Content
 		HTMLDiv cardContent2 = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "card-content");
 		cardContent2.addChild(new HTMLObject("span").setInnerText("Spieler:").setHtmlAttribute("class", "card-title"));
@@ -154,6 +168,7 @@ public class Lobby {
 		cardDiv.addChild(cardContent);
 		cardDiv.addChild(cardActionDiv);
 		cardDiv.addChild(cardActionDiv3);
+		cardDiv.addChild(cardActionDiv4);
 		cardDiv.addChild(cardContent2);
 		cardDiv.addChild(cardAction2Div);
 		body.addChild(cardDiv);
@@ -167,7 +182,7 @@ public class Lobby {
 		if (users.size() < 2) return;
 		ArrayList<String> cats = new ArrayList<String>();
 		cats.addAll(this.enabledCategories);
-		main.gameManager.createGame(owner, users, cats, this.enabledChars , 5);
+		main.gameManager.createGame(owner, users, cats, this.enabledChars , rounds , seconds , voting , stop);
 		for (User user : (ArrayList<User>) this.users.clone()) {
 			users.remove(user);
 		}
@@ -236,6 +251,7 @@ public class Lobby {
 	}
 	
 	public void updateCategories(User user) {
+	
 		HTMLDiv categoryListDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.categoriesDiv");
 		for (String s : this.categories) {
 			if (this.enabledCategories.contains(s))
@@ -243,7 +259,7 @@ public class Lobby {
 					.setHtmlAttribute("class", "btn waves-effect waves-light amber lighten-5 black-text"));
 			else {
 				categoryListDiv.addChild(new HTMLObject("a").setObjectID("slf.lobby.toggleCategory."+s).setInnerText(s).setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
-						.setHtmlAttribute("class", "waves-effect waves-teal btn-flat black-text"));
+						.setHtmlAttribute("class", "btn waves-effect waves-dark white black-text"));
 			}
 		}
 		try {
@@ -259,7 +275,7 @@ public class Lobby {
 					.setHtmlAttribute("class", "btn waves-effect waves-light amber lighten-5 black-text"));
 			else {
 				charListDiv.addChild(new HTMLObject("a").setObjectID("slf.lobby.toggleChar."+s).setInnerText(s).setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
-						.setHtmlAttribute("class", "waves-effect waves-teal btn-flat black-text"));
+						.setHtmlAttribute("class", "btn waves-effect waves-dark white black-text"));
 			}
 		}
 		try {
@@ -269,4 +285,55 @@ public class Lobby {
 		}
 	}
 
+	public void updateSettings() {
+		for (User user : this.users) {
+			updateSettings(user);
+		}
+	}
+	
+	public void updateSettings(User user) {
+	
+		HTMLDiv settingsDiv = (HTMLDiv) new HTMLDiv().setObjectID("slf.lobby.settingsDiv");
+		HTMLDiv row = (HTMLDiv) new HTMLDiv().setHtmlAttribute("class", "row");
+		
+		HTMLDiv divSet = new HTMLDiv();
+		HTMLObject label = new HTMLObject("label");
+		label.addChild(((HTMLCheckbox) new HTMLCheckbox(this.voting).setObjectID("slf.lobby.settingsVoting")).setCheckboxHandler(main.getServer().getEventManager() , main.checkboxHandler));
+		label.addChild(new HTMLSpan("Jeder kann voten"));
+		HTMLObject label2 = new HTMLObject("label");
+		label2.addChild(((HTMLCheckbox) new HTMLCheckbox(this.stop).setObjectID("slf.lobby.settingsStopButton")).setCheckboxHandler(main.getServer().getEventManager() , main.checkboxHandler));
+		label2.addChild(new HTMLSpan("Stopp Button"));
+		divSet.addChild(label).addChild(label2);
+
+		HTMLDiv cardVoting = UTILS.createCard("Einstellungen", divSet, null);
+		row.addChild(cardVoting.setHtmlAttribute("class", "col s12 m6 l4 xl3"));	
+		
+		HTMLDiv divRounds = new HTMLDiv();
+		divRounds.addChild(new HTMLObject("a").setObjectID("slf.lobby.settingsRoundsMinus").setInnerText("-").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+				.setHtmlAttribute("class", "btn waves-effect waves-light amber lighten-5 red-text"));
+		divRounds.addChild(new HTMLSpan("&nbsp;"+rounds+" Runden&nbsp;"));
+		divRounds.addChild(new HTMLObject("a").setObjectID("slf.lobby.settingsRoundsPlus").setInnerText("+").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+				.setHtmlAttribute("class", "btn waves-effect waves-light amber lighten-5 green-text"));
+		HTMLDiv cardRounds = UTILS.createCard("&nbsp;Runden&nbsp;", divRounds, null);
+		row.addChild(cardRounds.setHtmlAttribute("class", "col s12 m6 l4 xl3"));	
+		
+		HTMLDiv divTime = new HTMLDiv();
+		divTime.addChild(new HTMLObject("a").setObjectID("slf.lobby.settingsTimeMinus").setInnerText("-").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+				.setHtmlAttribute("class", "btn waves-effect waves-light amber lighten-5 red-text"));
+		divTime.addChild(new HTMLSpan("&nbsp;"+seconds+" Sekunden&nbsp;"));
+		divTime.addChild(new HTMLObject("a").setObjectID("slf.lobby.settingsTimePlus").setInnerText("+").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+				.setHtmlAttribute("class", "btn waves-effect waves-light amber lighten-5 green-text"));
+		HTMLDiv cardTime = UTILS.createCard("&nbsp;Zeit&nbsp;", divTime, null);
+		row.addChild(cardTime.setHtmlAttribute("class", "col s12 m6 l4 xl3"));	
+		
+		settingsDiv.addChild(row);
+		
+		try {
+			user.getHtmlBox().updateObject("slf.lobby.settingsDiv", settingsDiv, false);
+		} catch (UnknownObjectIDException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 }

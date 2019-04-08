@@ -26,7 +26,7 @@ public class Game {
 	
 	Main main;
 	UUID uuid;
-	User owner;
+	public User owner;
 	public ArrayList<User> users;
 	public ArrayList<String> categories;
 	int rounds;
@@ -34,6 +34,9 @@ public class Game {
 	int game_timer_full = 60;
 	int game_timer = 0;
 	int remainingRounds;
+	
+	boolean dovoting;
+	public boolean stop;
 	
 	public HashMap<User , Integer> scores = new HashMap<User , Integer>();
 	public HashMap<User , Boolean> userready = new HashMap<User , Boolean>();
@@ -45,7 +48,7 @@ public class Game {
 	Set<String> chars;
 	
 	@SuppressWarnings("unchecked")
-	public Game(Main main , UUID uuid , User owner , ArrayList<User> users, ArrayList<String> categories , int rounds , Set<String> chars) {
+	public Game(Main main , UUID uuid , User owner , ArrayList<User> users, ArrayList<String> categories , int rounds , Set<String> chars , int seconds , boolean voting , boolean stop) {
 		this.chars = chars;
 		this.main = main;
 		this.uuid = uuid;
@@ -54,6 +57,11 @@ public class Game {
 		this.categories = categories;
 		this.rounds = rounds;
 		this.remainingRounds = rounds;
+		this.dovoting = voting;
+		this.stop = stop;
+		
+		this.game_timer_full = seconds;
+		
 		
 		for (User user : users) {
 			this.scores.put(user , 0);
@@ -195,15 +203,19 @@ public class Game {
 			divloading.addChild(new HTMLDiv().setObjectID("slf.game_writing.progressBar").setHtmlAttribute("class", "determinate").setHtmlAttribute("style", "width:0%;"));
 			cardActionDiv.addChild(divloading);
 			
-			HTMLDiv div = (HTMLDiv) new HTMLDiv();
-			div.setJavaScriptCSS("paddingLeft", "10%");
-			div.setJavaScriptCSS("paddingRight", "10%");
-			div.addChild(new HTMLObject("a").setObjectID("slf.game_writing.stop").setInnerText("STOP!").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
-					.setHtmlAttribute("class", "waves-effect waves-light btn-large red").setHtmlAttribute("style", "width:100%;"));
-			cardActionDiv.addChild(div);
-			
 			cardDiv.addChild(cardContent);
+			
+			if (this.stop) {
+				HTMLDiv div = (HTMLDiv) new HTMLDiv();
+				div.setJavaScriptCSS("paddingLeft", "10%");
+				div.setJavaScriptCSS("paddingRight", "10%");
+				div.addChild(new HTMLObject("a").setObjectID("slf.game_writing.stop").setInnerText("STOPP!").setHtmlAttribute("href", "javascript:void(0)").setClickHandler(main.getServer().getEventManager(), main.clickHandler)
+						.setHtmlAttribute("class", "waves-effect waves-light btn-large red").setHtmlAttribute("style", "width:100%;"));
+				cardActionDiv.addChild(div);
+			}
+			
 			cardDiv.addChild(cardActionDiv);
+			
 			body.addChild(cardDiv);
 			box.setHTMLBody(body);
 			user.setHTMLBox(box);
@@ -363,27 +375,56 @@ public class Game {
 						HTMLObject td = new HTMLObject("td").setHtmlAttribute("style", "width: 35%");
 						HTMLObject label = new HTMLObject("label");
 						
-						label.addChild(((HTMLCheckbox) new HTMLCheckbox(this.voting.get(from).get(s).get(user)).setObjectID("slf.game_results.check."+s+"."+main.userManager.getUsername(from))).setCheckboxHandler(main.getServer().getEventManager() , main.checkboxHandler)
+						if (this.dovoting) {
+							label.addChild(((HTMLCheckbox) new HTMLCheckbox(this.voting.get(from).get(s).get(user)).setObjectID("slf.game_results.check."+s+"."+main.userManager.getUsername(from))).setCheckboxHandler(main.getServer().getEventManager() , main.checkboxHandler)
 								.setHtmlAttribute("class", "filled-in"));
-						if (getVotes(from , s) > users.size() / 2)
-							label.addChild(new HTMLSpan("<b>" + this.answers.get(from).get(s) + "</b>").setHtmlAttribute("style", "color:black;"));
-						else {
-							label.addChild(new HTMLSpan("<strike>" + this.answers.get(from).get(s) + "</strike>").setHtmlAttribute("style", "color:black;"));
+						}
+						else if (user == owner) {
+							label.addChild(((HTMLCheckbox) new HTMLCheckbox(this.voting.get(from).get(s).get(user)).setObjectID("slf.game_results.check."+s+"."+main.userManager.getUsername(from))).setCheckboxHandler(main.getServer().getEventManager() , main.checkboxHandler)
+									.setHtmlAttribute("class", "filled-in"));
 						}
 						
+						if (dovoting) {
+							if (getVotes(from , s) > users.size() / 2)
+								label.addChild(new HTMLSpan("<b>" + this.answers.get(from).get(s) + "</b>").setHtmlAttribute("style", "color:black;"));
+							else {
+								label.addChild(new HTMLSpan("<strike>" + this.answers.get(from).get(s) + "</strike>").setHtmlAttribute("style", "color:black;"));
+							}
+						}
+						else {
+							boolean voted = this.voting.get(from).get(s).get(owner);
+							if (voted)
+								label.addChild(new HTMLSpan("<b>" + this.answers.get(from).get(s) + "</b>").setHtmlAttribute("style", "color:black;"));
+							else {
+								label.addChild(new HTMLSpan("<strike>" + this.answers.get(from).get(s) + "</strike>").setHtmlAttribute("style", "color:black;"));
+							}
+						}
+												
 						td.addChild(label);
 						tablerow.addChild(td);
 					}
 					HTMLObject td = new HTMLObject("td").setHtmlAttribute("style", "width: 35%").setHtmlAttribute("align", "right");
 
-					for (User voted : users) {
-						if (this.voting.get(from).get(s).get(voted)) {
+					if (this.dovoting) {
+						for (User voted : users) {
+							if (this.voting.get(from).get(s).get(voted)) {
+								td.addChild(new HTMLObject("i").setHtmlAttribute("class", "material-icons Medium green-text").setInnerText("check"));
+							}
+							else {
+								td.addChild(new HTMLObject("i").setHtmlAttribute("class", "material-icons Medium red-text").setInnerText("clear"));
+							}
+						}
+					}
+					else {
+						if (this.voting.get(from).get(s).get(owner)) {
 							td.addChild(new HTMLObject("i").setHtmlAttribute("class", "material-icons Medium green-text").setInnerText("check"));
 						}
 						else {
 							td.addChild(new HTMLObject("i").setHtmlAttribute("class", "material-icons Medium red-text").setInnerText("clear"));
 						}
 					}
+					
+					
 					tablerow.addChild(td);
 					
 					tablebody.addChild(tablerow);
@@ -417,8 +458,16 @@ public class Game {
 			
 			HashMap<User , String> answered = new HashMap<User , String>();
 			for (User user : users) {
-				if (getVotes(user , category) > users.size() / 2) {
-					answered.put(user , this.answers.get(user).get(category));
+				if (dovoting) {
+					if (getVotes(user , category) > users.size() / 2) {
+						answered.put(user , this.answers.get(user).get(category));
+					}
+				}
+				else {
+					boolean voted = this.voting.get(user).get(category).get(owner);
+					if (voted) {
+						answered.put(user , this.answers.get(user).get(category));
+					}
 				}
 			}
 			
@@ -481,8 +530,8 @@ public class Game {
 			
 			int rank = 1;
 			
-			for (User subuser : users) {
-				User highest = subuser;
+			for (@SuppressWarnings("unused") User subuser : users) {
+				User highest = new ArrayList<User>(scores.keySet()).get(0);
 				for (User x : users) {
 					if (scores.get(x) == null || scores.get(highest) == null) continue;
 					if (scores.get(x) > scores.get(highest)) {
